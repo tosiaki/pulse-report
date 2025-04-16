@@ -31,7 +31,6 @@ const ARTICLE_CARD_FIELDS_FRAGMENT_V5 = gql`
         url
         alternativeText
       }
-      # website # Optionally fetch website URL
     }
     featured_image {
       documentId
@@ -49,36 +48,32 @@ const GET_ARTICLE_DATA_WITH_RELATED_V5 = gql`
 
   query GetArticleDataWithRelatedV5(
       $slug: String!,
-      $primaryCategorySlug: String!, # Variable for primary category
-      $relatedLimit: Int = 4         # How many related articles
+      $primaryCategorySlug: String!,
+      $relatedLimit: Int = 4
       ) {
-    # Fetch the specific article
-    articles(filters: { slug: { eq: $slug } }, pagination: { limit: 1 }) { # Ensure only 1 main article
+    articles(filters: { slug: { eq: $slug } }, pagination: { limit: 1 }) {
       documentId
       title slug publication_date body seo_title seo_description
       featured_image { documentId url alternativeText width height }
       source { documentId name icon { documentId url alternativeText } website }
-      # Fetch categories to determine primary one later
       categories(pagination: { limit: 10 }) { documentId name slug }
     }
 
-    # Fetch ALL Categories for Tabs
     allCategories: categories(pagination: { limit: 50 }, sort: "name:asc") {
       documentId name slug
     }
 
-    # Fetch Related Articles
     relatedArticles: articles(
       filters: {
-        and: [ # Combine filters
-          { categories: { slug: { eq: $primaryCategorySlug } } }, # Must be in primary category
-          { slug: { ne: $slug } } # Must NOT be the current article
+        and: [
+          { categories: { slug: { eq: $primaryCategorySlug } } }, 
+          { slug: { ne: $slug } }
         ]
       },
-      sort: "publication_date:desc", # Or maybe "random" if supported/desired
+      sort: "publication_date:desc",
       pagination: { limit: $relatedLimit }
     ) {
-      ...ArticleCardFieldsV5 # Use card fragment
+      ...ArticleCardFieldsV5
     }
   }
 `;

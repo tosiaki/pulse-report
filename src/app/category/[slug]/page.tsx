@@ -54,7 +54,6 @@ const ARTICLE_CARD_FIELDS_FRAGMENT_V5 = gql`
         url
         alternativeText
       }
-      # website # Optionally fetch website URL
     }
     featured_image {
       documentId
@@ -74,7 +73,6 @@ const GET_CATEGORY_DATA_BY_SLUG_QUERY_V5 = gql`
       $page: Int = 1,
       $pageSize: Int = 12
   ) {
-    # Fetch Category Details
     categories(filters: { slug: { eq: $slug } }) {
         documentId
         name
@@ -82,7 +80,6 @@ const GET_CATEGORY_DATA_BY_SLUG_QUERY_V5 = gql`
         description
     }
 
-    # Fetch Paginated Articles
     articles(
       filters: { categories: { slug: { eq: $slug } } }
       sort: "publication_date:desc"
@@ -94,14 +91,12 @@ const GET_CATEGORY_DATA_BY_SLUG_QUERY_V5 = gql`
       ...ArticleCardFieldsV5
     }
 
-    # Fetch ALL Categories for Tabs (using an alias)
     allCategories: categories(pagination: { limit: 50 }, sort: "name:asc") {
       documentId
       name
       slug
     }
 
-    # REMOVED the articles_connection part
   }
 `;
 

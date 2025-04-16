@@ -17,9 +17,8 @@ interface AllStaticPageSlugsResponseV5 {
 // --- GraphQL Query for Slugs ---
 const GET_ALL_STATIC_PAGE_SLUGS_QUERY_V5 = gql`
   query GetAllStaticPageSlugsV5 {
-    # Query the collection, set a reasonable limit
     staticPages(pagination: { limit: 100 }) {
-       slug # Fetch only the slug
+       slug
     }
   }
 `;
@@ -76,7 +75,6 @@ interface StaticPageApiResponseV5 {
 // --- GraphQL Query ---
 const GET_STATIC_PAGE_QUERY_V5 = gql`
   query GetStaticPageBySlugV5($slug: String!) {
-    # Query the collection type, filter by slug
     staticPages(filters: { slug: { eq: $slug } }) {
         documentId
         title

@@ -52,10 +52,10 @@ const ARTICLE_CARD_FIELDS_FRAGMENT_V5 = gql`
     slug
     excerpt
     publication_date
-  source { # Access source relation
+  source {
     documentId
     name
-    icon { # Access icon media field within source
+    icon {
       documentId
       url
       alternativeText
@@ -77,17 +77,14 @@ const GET_INITIAL_HOMEPAGE_DATA_V5 = gql`
 
   query GetInitialHomepageDataV5(
       $heroLimit: Int = 5,
-      $initialArticlesPageSize: Int = 16 # How many initial articles for Home
+      $initialArticlesPageSize: Int = 16
   ) {
-    # 1. Homepage data (only hero articles needed now)
     homepage {
       hero_articles(pagination: { limit: $heroLimit }, sort: "publication_date:desc") {
         ...ArticleCardFieldsV5
       }
-      # Removed featured_category_sections fetch
     }
 
-    # 2. Initial Latest Articles (for "Home" tab)
     initialArticles: articles(
         sort: "publication_date:desc",
         pagination: { page: 1, pageSize: $initialArticlesPageSize }
@@ -95,7 +92,6 @@ const GET_INITIAL_HOMEPAGE_DATA_V5 = gql`
         ...ArticleCardFieldsV5
     }
 
-    # 3. All Categories for Tabs
     allCategories: categories(pagination: { limit: 50 }, sort: "name:asc") {
       documentId
       name
