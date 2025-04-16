@@ -120,8 +120,6 @@ async function getHomepageDataV5(): Promise<FetchedHomepageDataV5 | null> {
         return data;
     } catch (error: unknown) {
         console.error("Failed to fetch initial homepage data:", error);
-	console.error(`This is the authorization: Bearer ${token}`);
-	console.error(`This is the endpoint: ${endpoint}`);
         if (error instanceof ClientError) {
             console.error("GraphQL Error Details:", JSON.stringify(error, undefined, 2));
         }

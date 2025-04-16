@@ -10,8 +10,10 @@ export default function Footer() {
 	<div className="text-gray-600 text-sm">
           <p>© {new Date().getFullYear()} Pulse Report. All rights reserved.</p>
           <div className="mt-2 space-x-4">
-            <Link href="/pages/about-us" className="hover:underline">About Us</Link>
-            <Link href="/pages/privacy-policy" className="hover:underline">Privacy Policy</Link>
+     <Link href="/pages/about-us" className="hover:underline">About Us</Link>
+     <Link href="/pages/privacy-policy" className="hover:underline">Privacy Policy</Link>
++    <Link href="/pages/terms-of-service" className="hover:underline">Terms of Service</Link>
+     <Link href="/pages/contact-us" className="hover:underline">Contact Us</Link>
             {/* Add Contact Us later if needed */}
             {/* <Link href="/pages/contact-us" className="hover:underline">Contact Us</Link> */}
           </div>

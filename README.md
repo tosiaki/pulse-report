@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pulse Report - Frontend (Next.js)
+
+This project is a news website frontend built with Next.js, Tailwind CSS, and TypeScript, designed to replicate the functionality and layout of sites like OneNews/Microsoft Start. It fetches content from a Strapi CMS backend.
+
+## Prerequisites
+
+*   Node.js (v18 or later recommended)
+*   npm or yarn
+*   A running instance of the corresponding [Pulse Report Strapi CMS](link-to-your-strapi-repo-if-public) (local or deployed).
 
 ## Getting Started
 
-First, run the development server:
+1.  **Clone the repository:**
+    ```bash
+    git clone <your-frontend-repo-url>
+    cd pulse-report
+    ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3.  **Set up Environment Variables:**
+    Create a `.env.local` file in the project root directory by copying `.env.example` (if you create one) or manually adding the required variables:
+    ```dotenv
+    # .env.local
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+    # URL for the Strapi GraphQL endpoint (ensure it's accessible from your machine)
+    # Use NEXT_PUBLIC_ for variables needed by the client-side store/components
+    NEXT_PUBLIC_STRAPI_API_URL=http://localhost:1337
+    # Read-only API Token generated in Strapi (Settings -> API Tokens)
+    # Use NEXT_PUBLIC_ if the token is needed client-side (e.g., by Zustand store fetch)
+    NEXT_PUBLIC_STRAPI_API_TOKEN=YOUR_STRAPI_READ_ONLY_API_TOKEN
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    # Base URL of this frontend deployment (used for canonical URLs, sitemap)
+    # For local dev, localhost:3000 is fine
+    NEXT_PUBLIC_SITE_URL=http://localhost:3000
+    ```
+    *   Replace `YOUR_STRAPI_READ_ONLY_API_TOKEN` with the actual token from your Strapi admin panel.
+    *   Ensure the `NEXT_PUBLIC_STRAPI_API_URL` points to your running Strapi instance (local or deployed).
 
-## Learn More
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    # or
+    yarn dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+## Building for Production
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1.  **Ensure environment variables are set correctly for production.**
+2.  **Run the build command:**
+    ```bash
+    npm run build
+    ```
+3.  **Start the production server:**
+    ```bash
+    npm start
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+This project is configured for deployment on platforms like Vercel or Netlify.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1.  Connect your Git repository to the hosting provider.
+2.  Configure the following environment variables in the hosting provider's settings:
+    *   `NEXT_PUBLIC_STRAPI_API_URL` (pointing to your *deployed* Strapi backend URL)
+    *   `NEXT_PUBLIC_STRAPI_API_TOKEN`
+    *   `NEXT_PUBLIC_SITE_URL` (the final deployment URL)
+3.  The build command is typically `npm run build` or automatically detected.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tech Stack
+
+*   Framework: Next.js (App Router)
+*   Styling: Tailwind CSS (v4+)
+*   CMS Integration: Strapi (v5+) via GraphQL
+*   State Management: Zustand (for client-side category filtering)
+*   Libraries: `graphql-request`, `react-share`, `date-fns`, `@headlessui/react`, `@heroicons/react`, `react-markdown`, `swiper`, `tailwind-scrollbar`
+
+## Project Structure
+
+*   `src/app/`: Main application routes (App Router)
+*   `src/components/`: Reusable React components
+*   `src/hooks/`: Custom React hooks (e.g., `useMediaQuery`)
+*   `src/store/`: Zustand state management stores
+*   `src/types/`: TypeScript type definitions
+*   `public/`: Static assets
