@@ -5,14 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArticleCardDataV5 } from '@/types/Article'; // Use the card-specific type
 import { formatDistanceToNow } from 'date-fns'; // Import date-fns function
-import AdCardPlaceholder from './AdCardPlaceholder';
 import ArticleCarousel from './ArticleCarousel';
 import useMediaQuery from '@/hooks/useMediaQuery';
 import RelatedStoriesBox from './RelatedStoriesBox';
 
 interface ArticleGridProps {
   articles: ArticleCardDataV5[];
-  adFrequency?: number;
 }
 
 // Utility function (can be moved to a shared utils file)
@@ -77,74 +75,118 @@ const isSmScreen = useMediaQuery('(min-width: 640px)');
 
     // Loop through articles that should appear in the grid
     while (articleIndex < articles.length) {
-         const currentArticle = articles[articleIndex];
-         const currentGridPosition = gridItemCount; // Position within the visual grid render
-         const originalIndexForAd = articleIndex; // Index for ad frequency check
+         const currentItem = articles[articleIndex];
 
-         // Check if this is the position for the Related Stories Box
-         if (canShowRelatedBox && currentGridPosition === relatedBoxGridIndex) {
-             // Render Related Stories Box
-             const relatedArticles = [
-                 articles[articleIndex + 1], // Article that would have been here
-                 articles[articleIndex + 2], // Next article
-                 articles[articleIndex + 3], // Article after that
-             ];
-             itemsToRender.push(<RelatedStoriesBox key={`related-${articleIndex}`} articles={relatedArticles} />);
-             gridItemCount++; // The box takes one grid slot
-
-             // --- IMPORTANT: Skip the next 3 articles in the main loop ---
-             articleIndex += 4; // Move index past the 3 articles included in the box + the current slot
-             continue; // Skip to next iteration
+         // Skip if item is somehow undefined (safety check)
+         if (!currentItem) {
+             articleIndex++;
+             continue;
          }
 
-         // --- Render Regular Article Card ---
-         const imageUrl = getStrapiMediaUrl(currentArticle?.featured_image?.url);
+         const currentGridPosition = gridItemCount; // Position within the visual grid render
 
-	 let timeAgo = '';
+         // --- Check 1: Should we render Related Stories Box? ---
+         if (canShowRelatedBox && currentGridPosition === relatedBoxGridIndex) {
+             const relatedArticles = [
+                 articles[articleIndex + 1], // Potential articles to show
+                 articles[articleIndex + 2],
+                 articles[articleIndex + 3],
+             ];
+             // Ensure we only pass valid articles to the box
+             itemsToRender.push(<RelatedStoriesBox key={`related-${articleIndex}`} articles={relatedArticles.filter(a => !!a)} />);
+             gridItemCount++;
+             articleIndex += 4; // Skip articles used in the box
+             continue;
+         }
 
-        try {
-	timeAgo = formatDistanceToNow(new Date(currentArticle.publication_date), { addSuffix: true }).replace(/^about\s/, '').replace('less than a minute ago', '1m ago');
-        } catch (e) {
-            console.error("Error formatting date:", currentArticle.publication_date, e);
-            // Handle invalid date string if needed
-        }
+         // --- Check 2: Is the current item an Ad? ---
+         if (currentItem.is_advertisement && currentItem.external_url) {
+             const imageUrl = getStrapiMediaUrl(currentItem.featured_image?.url);
+             const source = currentItem.source;
+             const sourceName = source?.name || "Sponsored"; // Default source for Ads
+             const sourceIconUrl = getStrapiMediaUrl(source?.icon?.url);
 
+             itemsToRender.push(
+                 // Render Ad using an <a> tag
+                 <a
+                     key={currentItem.documentId} // Use documentId as key
+                     href={currentItem.external_url}
+                     target="_blank"
+                     rel="noopener noreferrer sponsored" // Add rel attributes
+                     className="block group"
+                 >
+                      <div className="bg-white rounded-lg shadow overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow duration-200">
+                           {/* Image Wrapper with AD Label */}
+                           <div className="relative w-full aspect-[5/3] overflow-hidden">
+                                {imageUrl && currentItem.featured_image ? (
+                                    <Image src={imageUrl} alt={currentItem.featured_image.alternativeText || currentItem.title} fill style={{ objectFit: 'cover' }} sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" />
+                                ) : (
+                                     <div className="h-full w-full bg-gray-200 flex items-center justify-center"><span className="text-gray-400 text-sm italic">Advertisement</span></div>
+                                )}
+                                {/* AD Label */}
+                                <span className="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] font-semibold px-1 rounded-sm leading-tight z-10">
+                                    AD
+                                </span>
+                           </div>
+                           {/* Text Content Wrapper */}
+                            <div className="p-3 flex flex-col flex-grow">
+                                {/* Row 1: Source Icon/Name ONLY (No Time) */}
+                                <div className="flex items-center text-xs text-gray-500 mb-1 gap-1.5">
+                                    {sourceIconUrl && source?.icon && ( <Image src={sourceIconUrl} alt={`${sourceName} Logo`} width={12} height={12} className="flex-shrink-0" /> )}
+                                    <span className="font-medium truncate flex-shrink min-w-0">{sourceName}</span>
+                                    {/* Time Ago is omitted */}
+                                </div>
+                                {/* Row 2: Title */}
+                                <h3 className="text-sm md:text-base font-semibold text-gray-900 line-clamp-3 flex-grow group-hover:text-blue-600">
+                                    {currentItem.title}
+                                </h3>
+                           </div>
+                       </div>
+                 </a>
+             );
+             gridItemCount++;
+             articleIndex++; // Move to next item in the list
+             continue; // Skip article rendering for this item
+         }
 
-         const source = currentArticle?.source;
-         const sourceName = source?.name || "Pulse Report"; // Default if no source linked
+         // --- Check 3: Render Regular Article Card ---
+         // (Only runs if not Related Box position and not an Ad)
+         const article = currentItem; // Treat as article now
+         const imageUrl = getStrapiMediaUrl(article.featured_image?.url);
+         let timeAgo = '';
+         try { timeAgo = formatDistanceToNow(new Date(article.publication_date), { addSuffix: true }).replace(/^about\s/, '').replace('less than a minute ago', '1m ago'); } catch (e) {}
+         const source = article.source;
+         const sourceName = source?.name || "Pulse Report";
          const sourceIconUrl = getStrapiMediaUrl(source?.icon?.url);
 
          itemsToRender.push(
-          <Link
-	    key={currentArticle.documentId}
-            href={`/article/${currentArticle.slug}`}
-            className="block group"
-          >
-            {/* Card container */}
-            <div className="bg-white rounded-lg shadow overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow duration-200">
-               {/* Image Wrapper */}
-               {imageUrl && currentArticle.featured_image ? (
-                 <div className="relative w-full aspect-[5/3] overflow-hidden"> {/* Aspect ratio ~60% */}
-                    <Image
-                      src={imageUrl}
-                      alt={currentArticle.featured_image.alternativeText || currentArticle.title}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" // Adjust sizes based on grid columns
-                      className="transition-transform duration-300 group-hover:scale-105"
-                    />
-                 </div>
-               ) : ( // Placeholder if no image
-                  <div className="relative w-full aspect-[5/3] bg-gray-200 flex items-center justify-center">
-                     <span className="text-gray-400 text-sm italic">No Image</span>
-                  </div>
-               )}
-
-               {/* Text Content Wrapper */}
-               <div className="p-3 flex flex-col flex-grow"> {/* Use flex-grow to push title down if needed */}
-                  {/* Row 1: Source/Time */}
-                  <div className="flex items-center text-xs text-gray-500 mb-1 gap-1.5">
-                             {/* Source Icon */}
+             <Link
+                 key={article.documentId}
+                 href={`/article/${article.slug}`}
+                 className="block group"
+             >
+                 <div className="bg-white rounded-lg shadow overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow duration-200">
+                     {/* Image Wrapper */}
+                     {imageUrl && article.featured_image ? (
+                       <div className="relative w-full aspect-[5/3] overflow-hidden"> {/* Aspect ratio ~60% */}
+                          <Image
+                            src={imageUrl}
+                            alt={article.featured_image.alternativeText || article.title}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" // Adjust sizes based on grid columns
+                            className="transition-transform duration-300 group-hover:scale-105"
+                          />
+                       </div>
+                     ) : ( // Placeholder if no image
+                        <div className="relative w-full aspect-[5/3] bg-gray-200 flex items-center justify-center">
+                           <span className="text-gray-400 text-sm italic">No Image</span>
+                        </div>
+                     )}
+                     {/* Text Content Wrapper */}
+                      <div className="p-3 flex flex-col flex-grow">
+                           {/* Row 1: Source Icon/Name/Time */}
+                          <div className="flex items-center text-xs text-gray-500 mb-1 gap-1.5">
                              {sourceIconUrl && source?.icon && (
                                  <Image
                                      src={sourceIconUrl}
@@ -154,31 +196,20 @@ const isSmScreen = useMediaQuery('(min-width: 640px)');
                                      className="flex-shrink-0" // Prevent shrinking
                                  />
                              )}
-                             {/* Source Name */}
-                             <span className="font-medium truncate flex-shrink min-w-0">{sourceName}</span> {/* Allow shrinking/truncating */}
-                             {/* Time Ago */}
+
+                             <span className="font-medium truncate flex-shrink min-w-0">{sourceName}</span>
                              <span className="ml-auto flex-shrink-0">{timeAgo}</span>
-                  </div>
-
-                  {/* Row 2: Title */}
+                          </div>
+                           {/* Row 2: Title */}
                   <h3 className="text-sm md:text-base font-semibold text-gray-900 line-clamp-3 flex-grow group-hover:text-blue-600">
-                     {currentArticle.title}
+                     {article.title}
                   </h3>
-                  {/* Removed Excerpt */}
-               </div>
-            </div>
-          </Link>
-	 );
-
+                      </div>
+                  </div>
+             </Link>
+         );
          gridItemCount++;
-         articleIndex++; // Move to the next article
-
-         // --- Ad Insertion Logic (after rendering the article) ---
-         const shouldInsertAd = (originalIndexForAd + 1) % safeAdFrequency === 0 && originalIndexForAd > 0;
-         if (shouldInsertAd) {
-             itemsToRender.push(<AdCardPlaceholder key={`ad-${originalIndexForAd}`} />);
-             gridItemCount++; // Ad takes a grid slot
-         }
+         articleIndex++; // Move to next item
     } // End While loop
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">

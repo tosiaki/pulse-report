@@ -68,6 +68,8 @@ const ARTICLE_CARD_FIELDS_FRAGMENT_V5 = gql`
       width
       height
     }
+    is_advertisement
+    external_url
   }
 `;
 

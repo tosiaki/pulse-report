@@ -18,6 +18,9 @@ export interface ArticleV5 {
     source?: SourceV5 | null;
     categories?: CategoryV5[] | null; // Optional relation, could be empty array or null
 
+    is_advertisement?: boolean | null;
+    external_url?: string | null; 
+
     // Add SEO fields if defined in Strapi
     seo_title?: string | null;
     seo_description?: string | null;
@@ -33,4 +36,7 @@ export interface ArticleCardDataV5 extends Pick<ArticleV5,
      categories?: Pick<CategoryV5, 'documentId' | 'name' | 'slug'>[] | null;
      author?: Pick<AuthorV5, 'name'> | null; 
      source?: Pick<SourceV5, 'documentId' | 'name' | 'icon'> | null;
+
+    is_advertisement?: boolean | null;
+    external_url?: string | null;
 }
