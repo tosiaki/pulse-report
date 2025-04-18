@@ -17,7 +17,7 @@ export default function RelatedArticles({ articles }: RelatedArticlesProps) {
                  Related Articles
              </h2>
              {/* Render ArticleGrid DIRECTLY - It will create its own grid */}
-             <ArticleGrid articles={articles} adFrequency={1000} />
+             <ArticleGrid articles={articles} />
              {/* REMOVE the extra wrapping <div> with grid classes */}
         </section>
     );

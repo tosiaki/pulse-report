@@ -23,7 +23,7 @@ const CAROUSEL_ITEM_COUNT = 6; // Number of items for the carousel
 
 export default function ArticleGrid({
     articles,
-    adFrequency = 5 // Inject ad every 5 items by default
+    // adFrequency = 5 // Inject ad every 5 items by default
 }: ArticleGridProps) {
 const isSmScreen = useMediaQuery('(min-width: 640px)');
     // Detect if the 'md' breakpoint (min-width: 768px) is active
@@ -43,7 +43,7 @@ const isSmScreen = useMediaQuery('(min-width: 640px)');
   }
 
     // Ensure adFrequency is a positive integer
-    const safeAdFrequency = Math.max(1, Math.floor(adFrequency));
+    // const safeAdFrequency = Math.max(1, Math.floor(adFrequency));
 
     // Split articles if the carousel should be shown
     const showCarousel = isExactlyThreeColumns && articles.length >= CAROUSEL_ITEM_COUNT;
@@ -154,7 +154,14 @@ const isSmScreen = useMediaQuery('(min-width: 640px)');
          const article = currentItem; // Treat as article now
          const imageUrl = getStrapiMediaUrl(article.featured_image?.url);
          let timeAgo = '';
-         try { timeAgo = formatDistanceToNow(new Date(article.publication_date), { addSuffix: true }).replace(/^about\s/, '').replace('less than a minute ago', '1m ago'); } catch (e) {}
+
+        try {
+	timeAgo = formatDistanceToNow(new Date(article.publication_date), { addSuffix: true }).replace(/^about\s/, '').replace('less than a minute ago', '1m ago');
+        } catch (e) {
+            console.error("Error formatting date:", article.publication_date, e);
+            // Handle invalid date string if needed
+        }
+
          const source = article.source;
          const sourceName = source?.name || "Pulse Report";
          const sourceIconUrl = getStrapiMediaUrl(source?.icon?.url);

@@ -52,7 +52,7 @@ export default function HomepageClientContent({
                     </div>
                  ) : (
                     // Pass the articles directly from the store state
-                    <ArticleGrid articles={articles} adFrequency={5} />
+                    <ArticleGrid articles={articles} />
                  )}
 
                  {/* Show 'No articles' only if not loading, no error, fetch has happened, and articles is empty */}
